@@ -58,7 +58,7 @@ module.exports = async (req, res) => {
 
       // زر التالي (عرض فيديو عشوائي بدون تكرار)
       if (data === 'next_video') {
-        await sendTelegram('answerCallbackQuery', { callback_query_id: callback.id, text: '⏳ جاري جلب الفيديو...' });
+        await sendTelegram('answerCallbackQuery', { callback_query_id: callback.id, text: '⏳ جاري جلب فيديو جديد...' });
 
         // جلب قائمة الفيديوهات من API الخاص بك
         const apiRes = await axios.get(MY_API_URL);
@@ -87,35 +87,11 @@ module.exports = async (req, res) => {
         const selectedVideo = unseenVideos[Math.floor(Math.random() * unseenVideos.length)];
         userHistory[chatId].push(selectedVideo.url); // حفظه في سجل المشاهدة
 
-    
-        
-                // تحويل رابط إنستغرام إلى رابط MP4 مباشر باستخدام Cobalt API المحدث
-        let directUrl = null;
-        try {
-          const cobaltRes = await axios.post('https://api.cobalt.tools/api/json', {
-            url: selectedVideo.url,
-            vQuality: '720'
-          }, {
-            headers: { 
-              'Accept': 'application/json', 
-              'Content-Type': 'application/json',
-              'User-Agent': 'Mozilla/5.0'
-            }
-          });
-          
-          // Cobalt أحياناً يرجع الرابط في حقل url أو تحت حقل picker
-          directUrl = cobaltRes.data?.url || (cobaltRes.data?.picker && cobaltRes.data.picker[0]?.url);
-        } catch (e) {
-          console.error('Cobalt Error:', e.message);
-        }
-
-
-        // الأزرار الشفافة التفاعلية (تشغيل، إيقاف، التالي)
+        // الأزرار الشفافة التفاعلية (زر مشاهدة مباشر + زر التالي)
         const controlButtons = {
           inline_keyboard: [
             [
-              { text: '▶️ تشغيل', callback_data: 'play_msg' },
-              { text: '⏸️ إيقاف', callback_data: 'pause_msg' }
+              { text: '📥 مشاهدة وتحميل الفيديو', url: selectedVideo.url }
             ],
             [
               { text: '⏭️ التالي (فيديو آخر)', callback_data: 'next_video' }
@@ -123,37 +99,11 @@ module.exports = async (req, res) => {
           ]
         };
 
-        if (directUrl) {
-          await sendTelegram('sendVideo', {
-            chat_id: chatId,
-            video: directUrl,
-            caption: '🎬 مشاهدة ممتعة!',
-            reply_markup: controlButtons
-          });
-        } else {
-          // في حال تعذر تحويل الفيديو، يتم إرسال الرابط مباشرة
-          await sendTelegram('sendMessage', {
-            chat_id: chatId,
-            text: `لم نتمكن من تشغيل الفيديو مباشرة، يمكنك مشاهدته من الرابط:\n${selectedVideo.url}`,
-            reply_markup: controlButtons
-          });
-        }
-      }
-
-      // أزرار التحكم بالتشغيل والإيقاف
-      if (data === 'play_msg') {
-        await sendTelegram('answerCallbackQuery', {
-          callback_query_id: callback.id,
-          text: '▶️ يمكنك تشغيل الفيديو بالضغط عليه في الشاشة.',
-          show_alert: false
-        });
-      }
-
-      if (data === 'pause_msg') {
-        await sendTelegram('answerCallbackQuery', {
-          callback_query_id: callback.id,
-          text: '⏸️ تم إيقاف الفيديو (اضغط على الفيديو للإيقاف المؤقت).',
-          show_alert: false
+        await sendTelegram('sendMessage', {
+          chat_id: chatId,
+          text: `🎬 **إليك فيديو جديد من القائمة:**\n\nاضغط على الزر أدناه لمشاهدته فوراً:`,
+          parse_mode: 'Markdown',
+          reply_markup: controlButtons
         });
       }
     }

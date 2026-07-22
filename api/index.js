@@ -87,6 +87,8 @@ module.exports = async (req, res) => {
         const selectedVideo = unseenVideos[Math.floor(Math.random() * unseenVideos.length)];
         userHistory[chatId].push(selectedVideo.url); // حفظه في سجل المشاهدة
 
+    
+        
         // تحويل رابط إنستغرام إلى رابط MP4 مباشر
         let directUrl = null;
         try {

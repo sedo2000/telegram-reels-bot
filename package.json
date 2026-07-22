@@ -1,0 +1,9 @@
+{
+  "name": "telegram-reels-bot",
+  "version": "1.0.0",
+  "description": "Telegram Bot for random reels",
+  "main": "api/index.js",
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

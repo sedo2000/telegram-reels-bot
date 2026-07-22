@@ -89,18 +89,26 @@ module.exports = async (req, res) => {
 
     
         
-        // تحويل رابط إنستغرام إلى رابط MP4 مباشر
+                // تحويل رابط إنستغرام إلى رابط MP4 مباشر باستخدام Cobalt API المحدث
         let directUrl = null;
         try {
           const cobaltRes = await axios.post('https://api.cobalt.tools/api/json', {
-            url: selectedVideo.url
+            url: selectedVideo.url,
+            vQuality: '720'
           }, {
-            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+            headers: { 
+              'Accept': 'application/json', 
+              'Content-Type': 'application/json',
+              'User-Agent': 'Mozilla/5.0'
+            }
           });
-          directUrl = cobaltRes.data?.url;
+          
+          // Cobalt أحياناً يرجع الرابط في حقل url أو تحت حقل picker
+          directUrl = cobaltRes.data?.url || (cobaltRes.data?.picker && cobaltRes.data.picker[0]?.url);
         } catch (e) {
           console.error('Cobalt Error:', e.message);
         }
+
 
         // الأزرار الشفافة التفاعلية (تشغيل، إيقاف، التالي)
         const controlButtons = {
